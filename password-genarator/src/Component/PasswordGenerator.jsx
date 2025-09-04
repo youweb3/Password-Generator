@@ -1,10 +1,35 @@
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 
 const PasswordGenerator = () => {
     const [length, setLength] = useState(10);
     const [numberAllowed, setNumberAllowed] = useState(false);
     const [characterAllowed, setCharacterAllowed] = useState(false);
     const [password, setPassword] = useState('');
+
+    //const cachedFn = useCallback(fn, dependencies) depenencies: lenght, numberAllo
+    const generatePassword = useCallback(() => {
+        let password = '';
+        let stringData = 'ABCDEFGHIGKLMNOPQRSTUVWXVZabcdefghigklmnopgrstuvwxyz'
+        if (numberAllowed) stringData += ' 0123456789';
+        if (characterAllowed) stringData += " !£$%&*?~#@/,.() ";
+
+        for (let index = 0; index < length; index++) {
+            let characters = Math.floor(Math.random() * stringData.length)
+            password += stringData[characters]
+        }
+
+        setPassword(password)
+
+    }, [length, numberAllowed, characterAllowed, setPassword])
+
+    const [copied, setCopied] = useState(false);
+
+    const handleCopy = () => {
+        navigator.clipboard.writeText(password);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+        // alert("Copied!");
+    }
 
     return (
         <div className="container mx-auto mt-8">
@@ -60,8 +85,11 @@ const PasswordGenerator = () => {
                             <span className="ml-2">Include Special Characters</span>
                         </label>
                     </div>
-                    <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="button">
+                    <button onClick={generatePassword} type="button" className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
                         Generate Password
+                    </button>
+                    <button onClick={handleCopy} title="Click to copy" type="button" className='bg-blue-500  hover:bg-red-700 text-white font-bold py-2 px-3.5 rounded focus:outline-none focus:shadow-outline ml-2'>
+                        {copied ? "Copied to Clipboard!" : "Copy"}
                     </button>
                 </div>
             </div>
