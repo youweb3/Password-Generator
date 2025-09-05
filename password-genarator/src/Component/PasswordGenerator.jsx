@@ -8,20 +8,43 @@ const PasswordGenerator = () => {
 
     //const cachedFn = useCallback(fn, dependencies) depenencies: lenght, numberAllo
     const generatePassword = useCallback(() => {
-        let password = '';
-        let stringData = 'ABCDEFGHIGKLMNOPQRSTUVWXVZabcdefghigklmnopgrstuvwxyz'
-        if (numberAllowed) stringData += ' 0123456789';
-        if (characterAllowed) stringData += " !£$%&*?~#@/,.() ";
+        const len = Number(length);
+        if (len < 1) return;
 
-        for (let index = 0; index < length; index++) {
-            let characters = Math.floor(Math.random() * stringData.length)
-            password += stringData[characters]
+        let passwordChars = [];
+        let stringData = 'ABCDEFGHIGKLMNOPQRSTUVWXVZabcdefghigklmnopgrstuvwxyz'
+
+        //Ensures at least one number/special char if selected
+        //Fills the rest randomly
+        if (numberAllowed) {
+            const numbers = ' 0123456789';
+            stringData += numbers;
+            passwordChars.push(numbers[Math.floor(Math.random() * numbers.length)]);
         }
 
-        setPassword(password)
+        if (characterAllowed) {
+            const specials = " !£$%&*?~#@/,.() ";
+            stringData += specials;
+            passwordChars.push(specials[Math.floor(Math.random() * specials.length)]);
+        }
+
+        const remainingLength = len - passwordChars.length;
+        for (let i = 0; i < remainingLength; i++) {
+            passwordChars.push(stringData[Math.floor(Math.random() * stringData.length)]);
+        }
+
+        // shuffle to randomize final password
+        for (let i = passwordChars.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [passwordChars[i], passwordChars[j]] = [passwordChars[j], passwordChars[i]];
+        }
+
+        //Updates state with the generated password
+        setPassword(passwordChars.join(''));
 
     }, [length, numberAllowed, characterAllowed, setPassword])
 
+    //////Copy to clipboard
     const [copied, setCopied] = useState(false);
 
     const handleCopy = () => {
