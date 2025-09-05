@@ -6,6 +6,22 @@ const PasswordGenerator = () => {
     const [characterAllowed, setCharacterAllowed] = useState(false);
     const [password, setPassword] = useState('');
 
+    const [strength, setStrength] = useState('');
+
+    //Password Strength Meter
+    const calculateStrength = useCallback(() => {
+        if (length >= 12 && numberAllowed && characterAllowed) {
+            setStrength("Strong");
+        } else if (length >= 8 && (numberAllowed || characterAllowed)) {
+            setStrength("Medium");
+        } else {
+            alert('You should generate strong pssword Include Numbers and Special Characters');
+            setStrength("Weak");
+            return;
+        }
+
+    }, [length, numberAllowed, characterAllowed]);
+
     //const cachedFn = useCallback(fn, dependencies) depenencies: lenght, numberAllo
     const generatePassword = useCallback(() => {
         const len = Number(length);
@@ -17,13 +33,13 @@ const PasswordGenerator = () => {
         //Ensures at least one number/special char if selected
         //Fills the rest randomly
         if (numberAllowed) {
-            const numbers = ' 0123456789';
+            const numbers = '0123456789';
             stringData += numbers;
             passwordChars.push(numbers[Math.floor(Math.random() * numbers.length)]);
         }
 
         if (characterAllowed) {
-            const specials = " !£$%&*?~#@/,.() ";
+            const specials = "!£$%&*?~#@/,.()";
             stringData += specials;
             passwordChars.push(specials[Math.floor(Math.random() * specials.length)]);
         }
@@ -41,8 +57,8 @@ const PasswordGenerator = () => {
 
         //Updates state with the generated password
         setPassword(passwordChars.join(''));
-
-    }, [length, numberAllowed, characterAllowed, setPassword])
+        calculateStrength();
+    }, [length, numberAllowed, characterAllowed, setPassword, calculateStrength])
 
     //////Copy to clipboard
     const [copied, setCopied] = useState(false);
@@ -71,6 +87,13 @@ const PasswordGenerator = () => {
                             value={password}
                             readOnly
                         />
+                        <div className="mt-2 font-bold">
+                            Strength: <span className={
+                                strength === "Weak" ? "text-red-500" :
+                                    strength === "Medium" ? "text-yellow-500" :
+                                        "text-gray-500"
+                            }>{strength}</span>
+                        </div>
                     </div>
                     <div className="mb-4">
                         <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="length">
@@ -83,7 +106,10 @@ const PasswordGenerator = () => {
                             min="6"
                             max="20"
                             value={length}
-                            onChange={(e) => setLength(e.target.value)}
+                            onChange={(e) => {
+                                setLength(Number(e.target.value));
+                                calculateStrength();
+                            }}
                         />
                     </div>
                     <div className="mb-4">
@@ -92,7 +118,10 @@ const PasswordGenerator = () => {
                                 type="checkbox"
                                 className="form-checkbox"
                                 checked={numberAllowed}
-                                onChange={() => setNumberAllowed(!numberAllowed)}
+                                onChange={() => {
+                                    setNumberAllowed(!numberAllowed);
+                                    calculateStrength();
+                                }}
                             />
                             <span className="ml-2">Include Numbers</span>
                         </label>
@@ -103,7 +132,10 @@ const PasswordGenerator = () => {
                                 type="checkbox"
                                 className="form-checkbox"
                                 checked={characterAllowed}
-                                onChange={() => setCharacterAllowed(!characterAllowed)}
+                                onChange={() => {
+                                    setCharacterAllowed(!characterAllowed);
+                                    calculateStrength();
+                                }}
                             />
                             <span className="ml-2">Include Special Characters</span>
                         </label>
