@@ -8,6 +8,8 @@ const PasswordGenerator = () => {
 
     const [strength, setStrength] = useState('');
 
+    const [excludeSimilar, setExcludeSimilar] = useState(false);
+
     //Password Strength Meter
     const calculateStrength = useCallback(() => {
         if (length >= 12 && numberAllowed && characterAllowed) {
@@ -15,7 +17,7 @@ const PasswordGenerator = () => {
         } else if (length >= 8 && (numberAllowed || characterAllowed)) {
             setStrength("Medium");
         } else {
-            alert('You should generate strong pssword Include Numbers and Special Characters');
+            // alert('You should generate strong pssword Include Numbers and Special Characters');
             setStrength("Weak");
             return;
         }
@@ -24,22 +26,34 @@ const PasswordGenerator = () => {
 
     //const cachedFn = useCallback(fn, dependencies) depenencies: lenght, numberAllo
     const generatePassword = useCallback(() => {
+
+        const similarChars = ['i', '1', 'l', 'o', '0'];
+
         const len = Number(length);
         if (len < 1) return;
 
         let passwordChars = [];
-        let stringData = 'ABCDEFGHIGKLMNOPQRSTUVWXVZabcdefghigklmnopgrstuvwxyz'
+        let stringData = 'ABCDEFGHIGKLMNOPQRSTUVWXVZabcdefghigklmnopgrstuvwxyz';
+        if (numberAllowed) stringData += '0123456789';
+        if (characterAllowed) stringData += '!£$%&*?~#@/,.()';
 
+        //Remove similar characters if enabled
+        if (excludeSimilar) {
+            stringData = stringData
+                .split('')
+                .filter(char => !similarChars.includes(char))
+                .join('');
+        }
         //Ensures at least one number/special char if selected
         //Fills the rest randomly
         if (numberAllowed) {
-            const numbers = '0123456789';
+            const numbers = '0123456789'.split('').filter(n => !excludeSimilar || !similarChars.includes(n));
             stringData += numbers;
             passwordChars.push(numbers[Math.floor(Math.random() * numbers.length)]);
         }
 
         if (characterAllowed) {
-            const specials = "!£$%&*?~#@/,.()";
+            const specials = "!£$%&*?~#@/,.()".split('').filter(n => !excludeSimilar || !similarChars.includes(n));
             stringData += specials;
             passwordChars.push(specials[Math.floor(Math.random() * specials.length)]);
         }
@@ -58,7 +72,18 @@ const PasswordGenerator = () => {
         //Updates state with the generated password
         setPassword(passwordChars.join(''));
         calculateStrength();
-    }, [length, numberAllowed, characterAllowed, setPassword, calculateStrength])
+
+        ///////alert
+        if (len >= 12 && numberAllowed && characterAllowed) {
+            setStrength("Strong");
+        } else if (len >= 8 && (numberAllowed || characterAllowed)) {
+            setStrength("Medium");
+        } else {
+            setStrength("Weak");
+            alert('You should generate strong password: Include Numbers and Special Characters');
+        }
+
+    }, [length, numberAllowed, characterAllowed, setPassword, calculateStrength, excludeSimilar])
 
     //////Copy to clipboard
     const [copied, setCopied] = useState(false);
@@ -138,6 +163,17 @@ const PasswordGenerator = () => {
                                 }}
                             />
                             <span className="ml-2">Include Special Characters</span>
+                        </label>
+                    </div>
+                    <div className='mb-4'>
+                        <label className='inline-flex items-center'>
+                            <input
+                                type='checkbox'
+                                className='form-checkbox'
+                                checked={excludeSimilar}
+                                onChange={() => setExcludeSimilar(!excludeSimilar)}
+                            />
+                            <span className='ml-2'>Exclude Similar (i, l, 1, o, 0)</span>
                         </label>
                     </div>
                     <button onClick={generatePassword} type="button" className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
