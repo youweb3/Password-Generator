@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
 import usePasswordGenerator from '../HooksComponent/usePasswordGenerator';
+import useUIPassword from '../HooksComponent/useUIPassword';
 
 import PasswordDisplay from './PasswordDisplay';
 import PasswordControls from './PasswordControls';
@@ -17,15 +17,8 @@ const PasswordGenerator = () => {
         calculateStrength,
     } = usePasswordGenerator();
 
-    //////Copy to clipboard
-    const [copied, setCopied] = useState(false);
-
-    const handleCopy = () => {
-        navigator.clipboard.writeText(password);
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
-        // alert("Copied!");
-    }
+    //UIHook
+    const { copied, handleCopy } = useUIPassword(password, generatePassword);
 
     return (
         <div className="container mx-auto mt-8 ml-8">
